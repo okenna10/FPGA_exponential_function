@@ -15,3 +15,5 @@ In this case, the necessary hardware is instantiated for each time it's needed i
 In this case, each subcomponent is instantiated only once. An FSM controls the flow of data through the system. 
 ![image](https://github.com/okenna10/hwa0/assets/101345398/2be054b1-7de0-4854-911e-5dfac4888ba8)
 
+## Note
+This code was written as part of an assignment at Cornell Tech and base code was provided by professor Dr Mohamed Abdelfattah
