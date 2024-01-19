@@ -46,20 +46,20 @@ logic [WIDTHOUT-1:0] a4_out; // ((((A5 * x + A4) * x + A3) * x + A2) * x + A1) *
 logic [WIDTHOUT-1:0] y_D;
 
 // compute y value
-mult16x16 Mult0 (.clk(clk), .i_dataa(A5), 		.i_datab(x[15:0]), 	.o_res(m0_out), .enable(i_ready));
-addr32p16 Addr0 (.clk(clk), .i_dataa(m0_out), 	.i_datab(A4), 			.o_res(a0_out), .enable(i_ready));
+mult16x16 Mult0 (.clk(clk), .i_dataa(A5), 	.i_datab(x[15:0]), 	.o_res(m0_out), .enable(i_ready));
+addr32p16 Addr0 (.clk(clk), .i_dataa(m0_out), 	.i_datab(A4), 		.o_res(a0_out), .enable(i_ready));
 
 mult32x16 Mult1 (.clk(clk), .i_dataa(a0_out), 	.i_datab(x[31:16]), 	.o_res(m1_out), .enable(i_ready));
-addr32p16 Addr1 (.clk(clk), .i_dataa(m1_out), 	.i_datab(A3), 			.o_res(a1_out), .enable(i_ready));
+addr32p16 Addr1 (.clk(clk), .i_dataa(m1_out), 	.i_datab(A3), 		.o_res(a1_out), .enable(i_ready));
 
 mult32x16 Mult2 (.clk(clk), .i_dataa(a1_out), 	.i_datab(x[47:32]), 	.o_res(m2_out), .enable(i_ready));
-addr32p16 Addr2 (.clk(clk), .i_dataa(m2_out), 	.i_datab(A2), 			.o_res(a2_out), .enable(i_ready));
+addr32p16 Addr2 (.clk(clk), .i_dataa(m2_out), 	.i_datab(A2), 		.o_res(a2_out), .enable(i_ready));
 
 mult32x16 Mult3 (.clk(clk), .i_dataa(a2_out), 	.i_datab(x[63:48]), 	.o_res(m3_out), .enable(i_ready));
-addr32p16 Addr3 (.clk(clk), .i_dataa(m3_out), 	.i_datab(A1), 			.o_res(a3_out), .enable(i_ready));
+addr32p16 Addr3 (.clk(clk), .i_dataa(m3_out), 	.i_datab(A1), 		.o_res(a3_out), .enable(i_ready));
 
 mult32x16 Mult4 (.clk(clk), .i_dataa(a3_out), 	.i_datab(x[79:64]), 	.o_res(m4_out), .enable(i_ready));
-addr32p16 Addr4 (.clk(clk), .i_dataa(m4_out), 	.i_datab(A0), 			.o_res(a4_out), .enable(i_ready));
+addr32p16 Addr4 (.clk(clk), .i_dataa(m4_out), 	.i_datab(A0), 		.o_res(a4_out), .enable(i_ready));
 
 assign y_D = a4_out;
 
@@ -83,7 +83,7 @@ always_ff @(posedge clk or posedge reset) begin
 	end
 end
 
-//Loop to generate the appropriate number of shift modules for the valid signal
+//Loop to stagger the valid signal an appropriate number of times
 generate
 genvar i;
 	for (i=0; i<5; i=i+1) begin : valid_shift
@@ -92,7 +92,7 @@ genvar i;
 	end
 endgenerate
 
-//Loop to generate the appropriate number of shift modules for input x
+//Loop to propagate the input value as it moves through the pipeline
 generate
 	for (i=0; i<4; i=i+1) begin : input_shift
 		valid_shift #(16) shift2(.clk(clk), .i_data(x[(i+1)*16-1:(i*16)]), .reset(reset), 
@@ -106,10 +106,10 @@ assign o_y = a4_out;
 // ready for inputs as long as receiver is ready for outputs */
 assign o_ready = i_ready;   
 		
-// the output is valid as long as the corresponding input was valid and 
-//	the receiver is ready. If the receiver isn't ready, the computed output
-//	will still remain on the register outputs and the circuit will resume
-//  normal operation when the receiver is ready again (i_ready is high)
+/* the output is valid as long as the corresponding input was valid and 
+* the receiver is ready. If the receiver isn't ready, the computed output
+* will still remain on the register outputs and the circuit will resume
+* normal operation when the receiver is ready again (i_ready is high) */
 assign o_valid = valid_Q2[5] & i_ready;	
 
 endmodule
